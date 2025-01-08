@@ -1,24 +1,48 @@
 const sinon = require('sinon');
-const expect = require('chai').expect;
-const sendPaymentRequestToApi = require('./3-payment');
+const { expect } = require('chai');
 const Utils = require('./utils');
+const sendPaymentRequestToApi = require('./3-payment');
 
 describe('sendPaymentRequestToApi', () => {
-    it('should use Utils.calculateNumber with correct arguments', () => {
-        // Create a spy for Utils.calculateNumber
-        const calculateNumberSpy = sinon.spy(Utils, 'calculateNumber');
+  let calculateNumberSpy;
+  let consoleLogSpy;
 
-        // Call the function we want to test
-        sendPaymentRequestToApi(100, 20);
+  beforeEach(() => {
+    calculateNumberSpy = sinon.spy(Utils, 'calculateNumber');
+    consoleLogSpy = sinon.spy(console, 'log');
+  });
 
-        // Verify the spy was called with correct arguments
-        expect(calculateNumberSpy.calledOnce).to.be.true;
-        expect(calculateNumberSpy.calledWith('SUM', 100, 20)).to.be.true;
+  afterEach(() => {
+    calculateNumberSpy.restore();
+    consoleLogSpy.restore();
+  });
 
-        // Verify the spy returns the expected sum
-        expect(calculateNumberSpy.returnValues[0]).to.equal(120);
+  it('should correctly call Utils.calculateNumber with SUM type and proper arguments', () => {
+    // Act
+    const result = sendPaymentRequestToApi(100, 20);
 
-        // Restore the spy
-        calculateNumberSpy.restore();
-    });
+    // Assert
+    expect(calculateNumberSpy.calledOnceWith('SUM', 100, 20)).to.be.true;
+    expect(result).to.equal(120);
+    expect(consoleLogSpy.calledWith('The total is: 120')).to.be.true;
+  });
+
+  it('should correctly handle decimal numbers', () => {
+    // Act
+    const result = sendPaymentRequestToApi(10.7, 20.3);
+
+    // Assert
+    expect(calculateNumberSpy.calledOnceWith('SUM', 10.7, 20.3)).to.be.true;
+    expect(result).to.equal(31); // 11 + 20
+    expect(consoleLogSpy.calledWith('The total is: 31')).to.be.true;
+  });
+
+  it('should fail if Utils.calculateNumber is not used', () => {
+    const originalCalculateNumber = Utils.calculateNumber;
+    Utils.calculateNumber = null;
+
+    expect(() => sendPaymentRequestToApi(100, 20)).to.throw();
+
+    Utils.calculateNumber = originalCalculateNumber;
+  });
 });
