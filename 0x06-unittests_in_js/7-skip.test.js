@@ -9,9 +9,8 @@ describe('Testing numbers', () => {
     expect(2 === 2).to.be.true;
   });
 
-  // Don't use .skip() as per the requirements
-  it('1 is equal to 3', () => {
-    expect(1 === 3).to.be.false;  // Modified assertion to make test pass correctly
+  it('1 is equal to 3', function() {
+    expect(1).to.equal(3);  // This will force the test to be counted but fail
   });
 
   it('3 is equal to 3', () => {
